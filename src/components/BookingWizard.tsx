@@ -164,7 +164,7 @@ export function BookingWizard({ initialState, onSuccess, onClose }: BookingWizar
 
   // Next Step validation
   const handleNextStep = () => {
-    if (step === 3) {
+    if (step === 2) {
       if (!carModel.trim()) {
         setValidationErrors((prev) => ({ ...prev, carModel: 'Укажите марку и модель авто' }));
         return;
@@ -248,6 +248,7 @@ export function BookingWizard({ initialState, onSuccess, onClose }: BookingWizar
   };
 
   const currentPackage = SERVICE_PACKAGES.find((p) => p.id === packageId) || SERVICE_PACKAGES[0];
+  const currentClass = VEHICLE_CLASSES.find((c) => c.id === vehicleClassId) || VEHICLE_CLASSES[0];
 
   // Quick dates
   const todayStr = getTodayDateString();
@@ -263,9 +264,9 @@ export function BookingWizard({ initialState, onSuccess, onClose }: BookingWizar
               {step < 6 ? `${step}/5` : '✓'}
             </span>
             <span className="text-sm font-bold text-white">
-              {step === 1 && 'Шаг 1: Выбор типа мойки (Робот / Ручная)'}
-              {step === 2 && 'Шаг 2: Выбор программы и доп. услуг'}
-              {step === 3 && 'Шаг 3: Класс и марка автомобиля'}
+              {step === 1 && 'Шаг 1: Выбор зоны мойки (Робот / Ручная)'}
+              {step === 2 && 'Шаг 2: Класс авто (тип кузова) и модель'}
+              {step === 3 && 'Шаг 3: Выбор программы и доп. услуг'}
               {step === 4 && 'Шаг 4: Выбор даты и свободного времени'}
               {step === 5 && 'Шаг 5: Контактные данные и госномер'}
               {step === 6 && 'Запись успешно оформлена!'}
@@ -393,114 +394,15 @@ export function BookingWizard({ initialState, onSuccess, onClose }: BookingWizar
           </div>
         )}
 
-        {/* STEP 2: PACKAGE & ADD-ONS */}
+        {/* STEP 2: CAR CLASS & MODEL (BODY TYPE FIRST) */}
         {step === 2 && (
           <div className="space-y-6">
             <div>
               <h3 className="text-xl font-bold text-white mb-1">
-                Выберите программу {washType === 'robot' ? 'робота' : 'ручной мойки'}
+                Выберите тип кузова и марку авто
               </h3>
               <p className="text-xs text-zinc-400">
-                Базовая стоимость указана для 1 класса; итоговая цена будет пересчитана на следующем шаге.
-              </p>
-            </div>
-
-            {/* Packages list */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {SERVICE_PACKAGES.filter((p) => p.washType === washType).map((pkg) => {
-                const isSelected = packageId === pkg.id;
-                return (
-                  <button
-                    key={pkg.id}
-                    type="button"
-                    onClick={() => setPackageId(pkg.id)}
-                    className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
-                      isSelected
-                        ? 'bg-cyan-950/30 border-cyan-500 text-white shadow-md ring-1 ring-cyan-500/50'
-                        : 'bg-black/30 border-white/10 text-zinc-300 hover:border-white/30'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-1 mb-1">
-                      <span className="font-bold text-sm text-white">{pkg.name}</span>
-                      {isSelected && (
-                        <span className="flex size-4 items-center justify-center rounded-full bg-cyan-500 text-black shrink-0">
-                          <Check className="size-3 stroke-[3]" />
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-zinc-400 mb-3 line-clamp-2">{pkg.shortDesc}</p>
-                    <div className="mt-auto flex items-baseline justify-between pt-2 border-t border-white/5">
-                      <span className="text-sm font-extrabold text-white">
-                        {formatPrice(pkg.basePrice)}
-                      </span>
-                      <span className="text-xs text-cyan-400 font-medium">
-                        {pkg.baseDurationMinutes} мин
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Add-on services */}
-            <div className="border-t border-white/10 pt-6">
-              <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <Sparkles className="size-4 text-cyan-400" />
-                Дополнительные опции
-              </h4>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {ADD_ON_SERVICES.map((addon) => {
-                  const isChecked = selectedAddonIds.includes(addon.id);
-                  return (
-                    <div
-                      key={addon.id}
-                      onClick={() => toggleAddon(addon.id)}
-                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all ${
-                        isChecked
-                          ? 'bg-cyan-950/25 border-cyan-500/60 text-white'
-                          : 'bg-black/30 border-white/10 text-zinc-300 hover:bg-white/5'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div
-                          className={`flex size-4 items-center justify-center rounded border transition-colors ${
-                            isChecked
-                              ? 'bg-cyan-500 border-cyan-500 text-black'
-                              : 'border-white/30 bg-black/40'
-                          }`}
-                        >
-                          {isChecked && <Check className="size-3 stroke-[3]" />}
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-white">{addon.name}</p>
-                          <p className="text-[10px] text-zinc-400">{addon.shortDesc}</p>
-                        </div>
-                      </div>
-
-                      <div className="text-right shrink-0 ml-2">
-                        <span className="text-xs font-bold text-cyan-300">
-                          +{formatPrice(addon.price)}
-                        </span>
-                        <div className="text-[10px] text-zinc-500">+{addon.durationMinutes} мин</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: CAR CLASS & MODEL */}
-        {step === 3 && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-bold text-white mb-1">
-                Выберите класс и укажите марку авто
-              </h3>
-              <p className="text-xs text-zinc-400">
-                Габариты автомобиля влияют на расход автохимии и время сушки/чистки.
+                Габариты кузова определяют расчетное время мойки, расход премиальной химии и персональную стоимость программ на следующем шаге.
               </p>
             </div>
 
@@ -558,6 +460,114 @@ export function BookingWizard({ initialState, onSuccess, onClose }: BookingWizar
                   {validationErrors.carModel}
                 </p>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* STEP 3: PACKAGE & ADD-ONS (SERVICES) */}
+        {step === 3 && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-1">
+                  Выберите программу {washType === 'robot' ? 'робота' : 'ручной мойки'}
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Стоимость и время точно рассчитаны для: <strong className="text-cyan-400">{currentClass.category}</strong> ({carModel || 'Ваш авто'}).
+                </p>
+              </div>
+
+              <Badge variant="outline" className="border-cyan-500/40 text-cyan-400 bg-cyan-950/40 text-xs w-fit">
+                {currentClass.name.split(':')[0]} ({currentClass.priceMultiplier}x)
+              </Badge>
+            </div>
+
+            {/* Packages list */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {SERVICE_PACKAGES.filter((p) => p.washType === washType).map((pkg) => {
+                const isSelected = packageId === pkg.id;
+                const priceForClass = Math.round(pkg.basePrice * currentClass.priceMultiplier);
+                const durationForClass = Math.ceil(pkg.baseDurationMinutes * currentClass.durationMultiplier);
+
+                return (
+                  <button
+                    key={pkg.id}
+                    type="button"
+                    onClick={() => setPackageId(pkg.id)}
+                    className={`flex flex-col text-left p-4 rounded-xl border transition-all ${
+                      isSelected
+                        ? 'bg-cyan-950/30 border-cyan-500 text-white shadow-md ring-1 ring-cyan-500/50'
+                        : 'bg-black/30 border-white/10 text-zinc-300 hover:border-white/30'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-1 mb-1">
+                      <span className="font-bold text-sm text-white">{pkg.name}</span>
+                      {isSelected && (
+                        <span className="flex size-4 items-center justify-center rounded-full bg-cyan-500 text-black shrink-0">
+                          <Check className="size-3 stroke-[3]" />
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-zinc-400 mb-3 line-clamp-2">{pkg.shortDesc}</p>
+                    <div className="mt-auto flex items-baseline justify-between pt-2 border-t border-white/5">
+                      <span className="text-sm font-extrabold text-white">
+                        {formatPrice(priceForClass)}
+                      </span>
+                      <span className="text-xs text-cyan-400 font-medium">
+                        ~{durationForClass} мин
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Add-on services */}
+            <div className="border-t border-white/10 pt-6">
+              <h4 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                <Sparkles className="size-4 text-cyan-400" />
+                Дополнительные опции
+              </h4>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {ADD_ON_SERVICES.map((addon) => {
+                  const isChecked = selectedAddonIds.includes(addon.id);
+                  return (
+                    <div
+                      key={addon.id}
+                      onClick={() => toggleAddon(addon.id)}
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer select-none transition-all ${
+                        isChecked
+                          ? 'bg-cyan-950/25 border-cyan-500/60 text-white'
+                          : 'bg-black/30 border-white/10 text-zinc-300 hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`flex size-4 items-center justify-center rounded border transition-colors ${
+                            isChecked
+                              ? 'bg-cyan-500 border-cyan-500 text-black'
+                              : 'border-white/30 bg-black/40'
+                          }`}
+                        >
+                          {isChecked && <Check className="size-3 stroke-[3]" />}
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-white">{addon.name}</p>
+                          <p className="text-[10px] text-zinc-400">{addon.shortDesc}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0 ml-2">
+                        <span className="text-xs font-bold text-cyan-300">
+                          +{formatPrice(addon.price)}
+                        </span>
+                        <div className="text-[10px] text-zinc-500">+{addon.durationMinutes} мин</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
